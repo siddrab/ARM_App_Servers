@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualMachineAdminUserName": {
+      "value": "vmadmin"
+    },
+    "virtualMachineAdminPassword": {
+      "value": "Microsoft@123456"
+    },
+    "virtualMachineNamePrefix": {
+      "value": "azhana"
+    },
+    "virtualMachineCount": {
+      "value": 3
+    },
+    "virtualMachineSize": {
+      "value": "Standard_DS1_v2"
+    },
+    "operatingSystem": {
+      "value": "Server2016"
+    },
+    "virtualNetworkResourceGroupName": {
+      "value": "East2_VNET"
+    },
+    "virtualNetworkName": {
+      "value": "Sid_East2_VNET"
+    },
+    "subnetName": {
+      "value": "default"
+    },
+    "location": {
+      "value": "eastus2"
+    }
+
+  }
+}
