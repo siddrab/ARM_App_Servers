@@ -69,18 +69,18 @@
         "description": "Name of the VNET"
       }
     },
-    "location": {
-      "type": "string",
-      "defaultValue": "eastus",
-      "metadata": {
-        "description": "Location for all resources."
-      }
-    },
     "subnetName": {
       "type": "string",
       "defaultValue": "Default",
       "metadata": {
         "description": "Name of the subnet in the virtual network"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Location for all resources."
       }
     },
     "ppgname": {
@@ -130,7 +130,7 @@
     "availabilitySetPlatformUpdateDomainCount": "5",
     "subnetRef": "[resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
     "networkSecurityGroupName": "default-NSG",
-    "updateip_templateUri": ["https://stage8bccfac2f0634791848.blob.core.windows.net/nested/update-nic.json"]
+    "updateip_templateUri": "[uri(parameters('_artifactsLocation'), concat('nested/NIC.json'))]"
   },
   "resources": [
     {
@@ -165,7 +165,7 @@
       "sku": {
         "name": "Standard_LRS"
       },
-      "dependsOn": [],
+      "dependsOn": ["NICCopy"],
       "tags": {
         "displayName": "diagnosticStorageAccount"
       },
@@ -292,8 +292,46 @@
         },
         "enableIPForwarding": false
       },
-      "dependsOn": [
-      ]
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat('updateIP', copyIndex(1))]",
+      "apiVersion": "2019-05-01",
+      "dependsOn": [ "NICCopy" ],
+      "copy": {
+        "name": "IPCopy",
+        "count": "[parameters('virtualMachineCount')]",
+        "mode": "Parallel"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('updateip_templateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+
+          "nicName": {
+            "value": "[concat(parameters('virtualMachineNamePrefix'), copyIndex(1), '-NIC1')]"
+          },
+          "ipName0": {
+            "value": "ipconfig1"
+          },
+          "ipName1": {
+            "value": "ipconfig2"
+          },
+          "SubnetRef": {
+            "value": "[variables('subnetRef')]"
+          },
+          "privateIp0": {
+            "value": "[reference(concat(parameters('virtualMachineNamePrefix'), copyIndex(1), '-NIC1')).ipConfigurations[0].properties.privateIPAddress]"
+          },
+          "privateIp1": {
+            "value": "[reference(concat(parameters('virtualMachineNamePrefix'), copyIndex(1), '-NIC1')).ipConfigurations[1].properties.privateIPAddress]"
+          }
+        }
+      }
     }
   ],
   "outputs": {}
